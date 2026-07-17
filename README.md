@@ -84,14 +84,38 @@ fonttools и подключены нативно (`react-native.config.js` + `np
 > После добавления новых шрифтов: положить `.ttf` в `src/assets/fonts`, выполнить
 > `npx react-native-asset`, затем пересобрать нативное приложение.
 
-## Данные
+## API-клиент (orval)
 
-Бэкенда пока нет: `API_CONFIG.useMocks` в `src/api/config.ts` включает фикстуры
-из `mocks.ts` каждого модуля. Тестовый код входа — `0000`, телефон любой.
+Типизированный клиент и react-query хуки генерируются из OpenAPI-схемы
+`https://api.easypit.kz/openapi/schema/` (JU / Easypit Client API, 77 эндпоинтов).
 
-Когда появится API: выставить `useMocks: false` и заменить `baseURL`.
-Для кодогенерации клиента — `npm i -D orval && npm run api:generate`
-(конфиг в `src/api/generator.js`).
+```sh
+npm run api:schema     # обновить локальную копию src/api/openapi.yaml с сервера
+npm run api:generate   # сгенерировать клиент в src/api/generated
+```
+
+Как устроено:
+
+- Конфиг — `orval.config.js` (режим `tags-split`, клиент `react-query`).
+- Все запросы идут через `customInstance` из `src/api/mutator.ts` → наш axios
+  `api` с JWT-интерсептором и обработкой 401 (базовый URL — `src/api/config.ts`).
+- `src/api/openapi-transformer.js` чинит nullable-enum от drf-spectacular
+  (`oneOf: [Enum, BlankEnum, NullEnum]`) — иначе orval падает на дубликатах имён.
+- Всё в `src/api/generated/**` перезаписывается генератором и исключено из eslint
+  (`.eslintignore`) — руками не редактируем.
+
+Использование — импорт хука из нужного тега, напр.:
+
+```ts
+import { useCarwashCarwashesList } from '@/api/generated/carwashes/carwashes';
+```
+
+## Данные и моки
+
+Экраны пока работают на фикстурах: `API_CONFIG.useMocks` в `src/api/config.ts`
+включает `mocks.ts` каждого модуля (тестовый код входа — `0000`, телефон любой).
+Реальный бэкенд уже доступен — по мере готовности переключаем модули на
+сгенерированные хуки и ставим `useMocks: false`.
 
 ## Известные ограничения
 

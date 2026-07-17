@@ -1,5 +1,6 @@
 export const API_CONFIG = {
-  baseURL: 'https://api.easypit.app/v1',
+  // Пути в сгенерированном клиенте уже содержат /v1, поэтому здесь только хост.
+  baseURL: 'https://api.easypit.kz',
   timeout: 15_000,
   /**
    * Пока нет бэкенда — модули отдают фикстуры из своих mocks.ts.
