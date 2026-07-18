@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-import { CalendarIcon, UserIcon, WashIcon } from '@/assets/icons';
+import { CalendarIcon, DashboardIcon, UserIcon, WashIcon } from '@/assets/icons';
+import { DashboardScreen } from '@/screens/dashboard';
 import { MyBookingsScreen } from '@/screens/my-bookings';
 import { ProfileScreen } from '@/screens/profile';
 import { WashListScreen } from '@/screens/wash-list';
@@ -10,6 +11,10 @@ import type { TabParamList } from '@/shared/types';
 const Tab = createBottomTabNavigator<TabParamList>();
 
 type TabIconProps = { color: string; size: number };
+
+const renderDashboardIcon = ({ color, size }: TabIconProps) => (
+  <DashboardIcon width={size} height={size} color={color} />
+);
 
 const renderWashIcon = ({ color, size }: TabIconProps) => (
   <WashIcon width={size} height={size} color={color} />
@@ -35,6 +40,12 @@ export const TabNavigator = () => (
       },
     }}
   >
+    <Tab.Screen
+      name="Dashboard"
+      component={DashboardScreen}
+      options={{ title: 'Главная', tabBarIcon: renderDashboardIcon }}
+    />
+
     <Tab.Screen
       name="WashList"
       component={WashListScreen}

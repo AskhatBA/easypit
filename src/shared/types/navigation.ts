@@ -2,6 +2,7 @@ import type { NavigatorScreenParams } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type TabParamList = {
+  Dashboard: undefined;
   WashList: undefined;
   MyBookings: undefined;
   Profile: undefined;
