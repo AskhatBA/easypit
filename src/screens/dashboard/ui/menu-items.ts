@@ -14,18 +14,21 @@ import {
 } from '@/assets/icons';
 import type { TabParamList } from '@/shared/types';
 
+/** Плитка ведёт либо на таб, либо на push-экран Carwashes (все без параметров). */
+export type MenuTarget = keyof TabParamList | 'Carwashes';
+
 export type MenuItem = {
   key: string;
   label: string;
   Icon: FC<SvgProps>;
   /** Куда ведёт плитка. Пусто — раздел пока не реализован в приложении. */
-  target?: keyof TabParamList;
+  target?: MenuTarget;
 };
 
 // Порядок и иконки — как в левом меню business.easypit.kz.
 export const MENU_ITEMS: MenuItem[] = [
   { key: 'floor', label: 'Зал мойки', Icon: FloorIcon },
-  { key: 'carwashes', label: 'Автомойки', Icon: CarIcon, target: 'WashList' },
+  { key: 'carwashes', label: 'Автомойки', Icon: CarIcon, target: 'Carwashes' },
   {
     key: 'bookings',
     label: 'Бронирования',

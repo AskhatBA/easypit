@@ -11,6 +11,7 @@ export type TabParamList = {
 export type RootStackParamList = {
   Login: undefined;
   Tabs: NavigatorScreenParams<TabParamList>;
+  Carwashes: undefined;
   WashDetails: { washId: string };
   Booking: { washId: string };
 };

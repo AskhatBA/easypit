@@ -1,5 +1,6 @@
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, type CompositeNavigationProp } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   ActivityIndicator,
   Dimensions,
@@ -20,7 +21,7 @@ import {
   useDashboard,
 } from '@/modules/dashboard';
 import { colors, fonts, radius, spacing } from '@/shared/config';
-import type { TabParamList } from '@/shared/types';
+import type { RootStackParamList, TabParamList } from '@/shared/types';
 import { ScreenContainer } from '@/shared/ui';
 
 import { MENU_ITEMS, type MenuItem } from './menu-items';
@@ -33,7 +34,10 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const tileSize = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
 const contentWidth = SCREEN_WIDTH - H_PADDING * 2;
 
-type Navigation = BottomTabNavigationProp<TabParamList>;
+type Navigation = CompositeNavigationProp<
+  BottomTabNavigationProp<TabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 const MenuTile = ({
   item,

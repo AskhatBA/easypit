@@ -1,15 +1,20 @@
-import { delay } from '@/api';
+import { fetchTenantBookings, fetchTenantCarwashes } from '@/api/tenant';
 
-import { MOCK_DASHBOARD } from './mocks';
+import { buildDashboardSummary } from './aggregate';
 import type { DashboardSummary } from './types';
 
 /**
- * Сводка главного экрана. На вебе агрегируется из tenant-эндпоинтов
- * (/v1/tenant/carwash/, /v1/tenant/bookings/carwash/{id}/?scheduled_date=today).
- * Их нет в сгенерированном Client API, поэтому пока отдаём мок той же формы —
- * когда появится tenant-клиент, заменить тело функции на реальные вызовы.
+ * Сводка главного экрана — реальные данные из tenant-эндпоинтов:
+ * список моек (/v1/tenant/carwash/) + брони по каждой мойке
+ * (/v1/tenant/bookings/carwash/{id}/). KPI, пульс, выручка и лента
+ * считаются из броней на клиенте (buildDashboardSummary).
  */
 export const fetchDashboard = async (): Promise<DashboardSummary> => {
-  await delay(400);
-  return MOCK_DASHBOARD;
+  const carwashes = await fetchTenantCarwashes();
+
+  const bookingLists = await Promise.all(
+    carwashes.map(carwash => fetchTenantBookings(carwash.id)),
+  );
+
+  return buildDashboardSummary(carwashes, bookingLists.flat());
 };

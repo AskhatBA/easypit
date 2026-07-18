@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { useAuthStore } from '@/modules/auth';
 import { BookingScreen } from '@/screens/booking';
+import { CarwashesScreen } from '@/screens/carwashes';
 import { LoginScreen } from '@/screens/login';
 import { WashDetailsScreen } from '@/screens/wash-details';
 import { colors } from '@/shared/config';
@@ -30,6 +31,11 @@ export const RootNavigator = () => {
               name="Tabs"
               component={TabNavigator}
               options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="Carwashes"
+              component={CarwashesScreen}
+              options={{ title: 'Автомойки' }}
             />
             <Stack.Screen
               name="WashDetails"
