@@ -1,36 +1,34 @@
 import { Formik } from 'formik';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Yup from 'yup';
 
 import { colors, fonts, spacing } from '@/shared/config';
 import { Button, FormikField } from '@/shared/ui';
 
-import { useLogin, useLoginError, useRequestCode } from '../hooks';
-import { MOCK_LOGIN_CODE } from '../mocks';
+import { useLogin, useLoginError } from '../hooks';
 
 type LoginFormValues = {
-  phone: string;
-  code: string;
+  identifier: string;
+  password: string;
 };
 
 const initialValues: LoginFormValues = {
-  phone: '',
-  code: '',
+  identifier: '',
+  password: '',
 };
 
 const validationSchema = Yup.object({
-  phone: Yup.string()
-    .required('Введите номер телефона')
-    .matches(/^\+?[0-9\s()-]{10,18}$/, 'Проверьте номер телефона'),
-  code: Yup.string()
-    .required('Введите код из SMS')
-    .length(4, 'Код состоит из 4 цифр'),
+  identifier: Yup.string()
+    .trim()
+    .required('Введите email или телефон'),
+  password: Yup.string().required('Введите пароль'),
 });
 
 export const LoginForm = () => {
-  const requestCodeMutation = useRequestCode();
   const loginMutation = useLogin();
   const errorMessage = useLoginError(loginMutation.error);
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <Formik
@@ -38,39 +36,39 @@ export const LoginForm = () => {
       validationSchema={validationSchema}
       onSubmit={values => loginMutation.mutate(values)}
     >
-      {({ handleSubmit, values }) => (
+      {({ handleSubmit }) => (
         <View style={styles.form}>
           <FormikField
-            name="phone"
-            label="Телефон"
-            placeholder="+7 707 123 45 67"
-            keyboardType="phone-pad"
-            autoComplete="tel"
-            textContentType="telephoneNumber"
+            name="identifier"
+            label="Email или телефон"
+            placeholder="your@email.com или +7 700 000 00 00"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            autoComplete="username"
           />
 
-          <FormikField
-            name="code"
-            label="Код из SMS"
-            placeholder="0000"
-            keyboardType="number-pad"
-            maxLength={4}
-            textContentType="oneTimeCode"
-          />
-
-          <Button
-            title="Отправить код"
-            variant="ghost"
-            loading={requestCodeMutation.isPending}
-            disabled={!values.phone}
-            onPress={() => requestCodeMutation.mutate(values.phone)}
-          />
-
-          {requestCodeMutation.isSuccess ? (
-            <Text style={styles.hint}>
-              Код отправлен. Тестовый код — {MOCK_LOGIN_CODE}.
-            </Text>
-          ) : null}
+          <View>
+            <FormikField
+              name="password"
+              label="Пароль"
+              placeholder="Введите пароль"
+              secureTextEntry={!showPassword}
+              autoCapitalize="none"
+              autoComplete="password"
+              textContentType="password"
+            />
+            <Pressable
+              accessibilityRole="button"
+              hitSlop={8}
+              onPress={() => setShowPassword(current => !current)}
+              style={styles.toggle}
+            >
+              <Text style={styles.toggleText}>
+                {showPassword ? 'Скрыть' : 'Показать'}
+              </Text>
+            </Pressable>
+          </View>
 
           {errorMessage ? (
             <Text style={styles.error}>{errorMessage}</Text>
@@ -91,8 +89,15 @@ const styles = StyleSheet.create({
   form: {
     gap: spacing.lg,
   },
-  hint: {
-    fontFamily: fonts.regular,
+  toggle: {
+    position: 'absolute',
+    right: spacing.lg,
+    top: 34,
+    height: 24,
+    justifyContent: 'center',
+  },
+  toggleText: {
+    fontFamily: fonts.medium,
     fontSize: 13,
     color: colors.textMuted,
   },

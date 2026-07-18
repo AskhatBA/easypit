@@ -2,13 +2,19 @@ import axios from 'axios';
 
 export type ApiError = {
   message: string;
+  code?: string;
   status?: number;
-  fieldErrors?: Record<string, string>;
+  fieldErrors?: Record<string, string[] | string>;
 };
 
+/**
+ * Единый конверт ошибок бэкенда: { code, message, details }.
+ * details — null, либо объект/массив полевых ошибок при валидации (400).
+ */
 type ServerErrorBody = {
+  code?: string;
   message?: string;
-  errors?: Record<string, string>;
+  details?: Record<string, string[] | string> | null;
 };
 
 const DEFAULT_MESSAGE = 'Что-то пошло не так. Попробуйте ещё раз.';
@@ -24,10 +30,13 @@ export const toApiError = (error: unknown): ApiError => {
       return { message: NETWORK_MESSAGE };
     }
 
+    const body = error.response.data;
+
     return {
-      message: error.response.data?.message ?? DEFAULT_MESSAGE,
+      message: body?.message ?? DEFAULT_MESSAGE,
+      code: body?.code,
       status: error.response.status,
-      fieldErrors: error.response.data?.errors,
+      fieldErrors: body?.details ?? undefined,
     };
   }
 

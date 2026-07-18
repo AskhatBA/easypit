@@ -1,1 +1,6 @@
-export { useAuthStore, getAuthToken, clearAuthSession } from './auth-store';
+export {
+  useAuthStore,
+  getAuthToken,
+  getRefreshToken,
+  clearAuthSession,
+} from './auth-store';

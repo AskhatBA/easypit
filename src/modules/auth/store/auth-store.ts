@@ -1,12 +1,14 @@
 import { create } from 'zustand';
 
-import type { LoginResponse, User } from '../types';
+import type { Session, User } from '../types';
 
 type AuthState = {
   token: string | null;
+  refreshToken: string | null;
   user: User | null;
   isAuthenticated: boolean;
-  setSession: (session: LoginResponse) => void;
+  setSession: (session: Session) => void;
+  setTokens: (token: string, refreshToken: string) => void;
   setUser: (user: User) => void;
   clearSession: () => void;
 };
@@ -18,16 +20,28 @@ type AuthState = {
  */
 export const useAuthStore = create<AuthState>(set => ({
   token: null,
+  refreshToken: null,
   user: null,
   isAuthenticated: false,
 
-  setSession: ({ token, user }) => set({ token, user, isAuthenticated: true }),
+  setSession: ({ token, refreshToken, user }) =>
+    set({ token, refreshToken, user, isAuthenticated: true }),
+
+  setTokens: (token, refreshToken) => set({ token, refreshToken }),
 
   setUser: user => set({ user }),
 
-  clearSession: () => set({ token: null, user: null, isAuthenticated: false }),
+  clearSession: () =>
+    set({
+      token: null,
+      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
+    }),
 }));
 
 export const getAuthToken = () => useAuthStore.getState().token;
+
+export const getRefreshToken = () => useAuthStore.getState().refreshToken;
 
 export const clearAuthSession = () => useAuthStore.getState().clearSession();

@@ -1,47 +1,52 @@
-import { api, API_CONFIG, delay, ENDPOINTS } from '@/api';
-import { normalizePhone } from '@/shared/lib';
+import {
+  authLoginCreate,
+  authMeRetrieve,
+  authTokenRefreshCreate,
+} from '@/api/generated/authentication/authentication';
+import type { User as ApiUser } from '@/api/generated/model';
 
-import { MOCK_LOGIN_CODE, mockLoginResponse } from './mocks';
-import type { LoginPayload, LoginResponse, User } from './types';
+import type { LoginPayload, Session, User } from './types';
 
-export const requestCode = async (phone: string): Promise<void> => {
-  if (API_CONFIG.useMocks) {
-    await delay(400);
-    return;
-  }
-
-  await api.post(ENDPOINTS.auth.requestCode, { phone: normalizePhone(phone) });
-};
+const mapUser = (user: ApiUser): User => ({
+  id: user.id,
+  name: user.full_name,
+  phone: user.phone,
+  email: user.email,
+  roles: user.roles,
+});
 
 export const login = async ({
-  phone,
-  code,
-}: LoginPayload): Promise<LoginResponse> => {
-  if (API_CONFIG.useMocks) {
-    await delay(600);
-
-    if (code !== MOCK_LOGIN_CODE) {
-      throw new Error(`Неверный код. Для моков подойдёт ${MOCK_LOGIN_CODE}.`);
-    }
-
-    return mockLoginResponse(normalizePhone(phone));
-  }
-
-  const { data } = await api.post<LoginResponse>(ENDPOINTS.auth.login, {
-    phone: normalizePhone(phone),
-    code,
+  identifier,
+  password,
+}: LoginPayload): Promise<Session> => {
+  const response = await authLoginCreate({
+    identifier: identifier.trim(),
+    password,
   });
 
-  return data;
+  return {
+    token: response.access,
+    refreshToken: response.refresh,
+    user: mapUser(response.user),
+  };
 };
 
 export const fetchMe = async (): Promise<User> => {
-  if (API_CONFIG.useMocks) {
-    await delay(200);
-    return mockLoginResponse('77071234567').user;
-  }
+  const response = await authMeRetrieve();
+  return mapUser(response.user);
+};
 
-  const { data } = await api.get<User>(ENDPOINTS.auth.me);
+/**
+ * Обмен refresh-токена на новый access. Бэкенд может вернуть и новый refresh
+ * (скользящая сессия) — если нет, продолжаем использовать старый.
+ */
+export const refreshTokens = async (
+  refresh: string,
+): Promise<{ access: string; refresh: string }> => {
+  const response = await authTokenRefreshCreate({ refresh });
 
-  return data;
+  return {
+    access: response.access,
+    refresh: response.refresh ?? refresh,
+  };
 };

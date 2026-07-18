@@ -1,9 +1,5 @@
+// Ручные пути для модулей на моках (auth уже ходит через сгенерированный клиент).
 export const ENDPOINTS = {
-  auth: {
-    requestCode: '/auth/request-code',
-    login: '/auth/login',
-    me: '/auth/me',
-  },
   washes: {
     list: '/washes',
     byId: (washId: string) => `/washes/${washId}`,
@@ -19,7 +15,6 @@ export const ENDPOINTS = {
 } as const;
 
 export const QUERY_KEYS = {
-  me: ['me'] as const,
   washes: (search?: string) => ['washes', search ?? ''] as const,
   wash: (washId: string) => ['washes', washId] as const,
   washServices: (washId: string) => ['washes', washId, 'services'] as const,

@@ -110,15 +110,30 @@ npm run api:generate   # сгенерировать клиент в src/api/gene
 import { useCarwashCarwashesList } from '@/api/generated/carwashes/carwashes';
 ```
 
+## Авторизация
+
+Вход — по **email или телефону + пароль** (как в веб-панели), эндпоинт
+`POST /v1/auth/login/`. Логика в `src/modules/auth`:
+
+- `forms/login-form.tsx` — форма (identifier + password, показать/скрыть пароль);
+- `data.ts` — реальные вызовы `authLoginCreate` / `authMeRetrieve` /
+  `authTokenRefreshCreate` через сгенерированный клиент;
+- `store/auth-store.ts` — хранит access + refresh + user в памяти.
+
+Access-токен живёт 1 час: при `401` axios-интерсептор
+(`src/api/api.ts` + `src/app/bootstrap.ts`) один раз меняет refresh на новый
+access и повторяет запрос; если не вышло — сессия сбрасывается на экран входа.
+Авторизация всегда ходит в реальный бэкенд (не зависит от `useMocks`).
+
 ## Данные и моки
 
-Экраны пока работают на фикстурах: `API_CONFIG.useMocks` в `src/api/config.ts`
-включает `mocks.ts` каждого модуля (тестовый код входа — `0000`, телефон любой).
-Реальный бэкенд уже доступен — по мере готовности переключаем модули на
-сгенерированные хуки и ставим `useMocks: false`.
+Каталог моек и брони пока на фикстурах: `API_CONFIG.useMocks` в
+`src/api/config.ts` включает `mocks.ts` каждого модуля. Бэкенд для них уже есть —
+по мере готовности переключаем эти модули на сгенерированные хуки и ставим
+`useMocks: false` (авторизация от этого флага не зависит).
 
 ## Известные ограничения
 
-- Сессия живёт в памяти: после перезапуска нужен повторный вход.
+- Сессия живёт в памяти: после перезапуска приложения нужен повторный вход.
   Для persist — подключить `@react-native-async-storage/async-storage`
-  и обернуть стор в `persist` из `zustand/middleware`.
+  и обернуть стор в `persist` из `zustand/middleware` (сохранять access+refresh).

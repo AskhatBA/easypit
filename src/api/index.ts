@@ -1,4 +1,9 @@
-export { api, setTokenProvider, setUnauthorizedHandler } from './api';
+export {
+  api,
+  setTokenProvider,
+  setUnauthorizedHandler,
+  setRefreshHandler,
+} from './api';
 export { customInstance } from './mutator';
 export type { ErrorType } from './mutator';
 export { API_CONFIG } from './config';

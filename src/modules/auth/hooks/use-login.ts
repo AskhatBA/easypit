@@ -2,19 +2,14 @@ import { useMutation } from '@tanstack/react-query';
 
 import { toApiError } from '@/api';
 
-import { login, requestCode } from '../data';
+import { login } from '../data';
 import { useAuthStore } from '../store';
-import type { LoginPayload, LoginResponse } from '../types';
-
-export const useRequestCode = () =>
-  useMutation({
-    mutationFn: requestCode,
-  });
+import type { LoginPayload, Session } from '../types';
 
 export const useLogin = () => {
   const setSession = useAuthStore(state => state.setSession);
 
-  return useMutation<LoginResponse, unknown, LoginPayload>({
+  return useMutation<Session, unknown, LoginPayload>({
     mutationFn: login,
     onSuccess: setSession,
   });
