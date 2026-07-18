@@ -1,8 +1,24 @@
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { useNavigation } from '@react-navigation/native';
-import { Dimensions, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Dimensions,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { useAuthStore } from '@/modules/auth';
+import {
+  AttentionList,
+  LiveFeed,
+  PulseCard,
+  RevenueChart,
+  StatCards,
+  useDashboard,
+} from '@/modules/dashboard';
 import { colors, fonts, radius, spacing } from '@/shared/config';
 import type { TabParamList } from '@/shared/types';
 import { ScreenContainer } from '@/shared/ui';
@@ -12,10 +28,10 @@ import { MENU_ITEMS, type MenuItem } from './menu-items';
 const COLUMNS = 3;
 const GAP = spacing.md;
 const H_PADDING = spacing.lg;
+const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const tileSize =
-  (Dimensions.get('window').width - H_PADDING * 2 - GAP * (COLUMNS - 1)) /
-  COLUMNS;
+const tileSize = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLUMNS - 1)) / COLUMNS;
+const contentWidth = SCREEN_WIDTH - H_PADDING * 2;
 
 type Navigation = BottomTabNavigationProp<TabParamList>;
 
@@ -47,6 +63,7 @@ const MenuTile = ({
 export const DashboardScreen = () => {
   const navigation = useNavigation<Navigation>();
   const userName = useAuthStore(state => state.user?.name);
+  const { data, isPending } = useDashboard();
 
   const handlePress = (item: MenuItem) => {
     if (item.target) {
@@ -58,18 +75,56 @@ export const DashboardScreen = () => {
     <ScreenContainer>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.eyebrow}>МЕНЮ</Text>
+          <Text style={styles.eyebrow}>ОБЗОР СЕТИ</Text>
           <Text style={styles.title}>
             {userName ? `Привет, ${userName.split(' ')[0]}` : 'Панель'}
           </Text>
           <Text style={styles.subtitle}>Командный центр вашей сети</Text>
         </View>
 
+        {/* Пульс · брони сегодня — выше меню */}
+        {isPending || !data ? (
+          <View style={styles.pulsePlaceholder}>
+            <ActivityIndicator color={colors.accent} />
+          </View>
+        ) : (
+          <PulseCard
+            bookingsToday={data.bookingsToday}
+            changePct={data.bookingsChangePct}
+            projectedRevenue={data.projectedRevenue}
+            trend={data.pulseTrend}
+            width={contentWidth}
+          />
+        )}
+
+        {/* Меню-сетка */}
         <View style={styles.grid}>
           {MENU_ITEMS.map(item => (
             <MenuTile key={item.key} item={item} onPress={handlePress} />
           ))}
         </View>
+
+        {/* Остальные элементы дашборда — ниже меню */}
+        {data ? (
+          <>
+            <StatCards
+              collectedToday={data.collectedToday}
+              collectedChangePct={data.collectedChangePct}
+              toCollect={data.toCollect}
+              unpaidCount={data.unpaidCount}
+              avgRating={data.avgRating}
+              reviewsCount={data.reviewsCount}
+              bookingsToday={data.bookingsToday}
+              bookingsChangePct={data.bookingsChangePct}
+            />
+
+            <AttentionList items={data.attention} />
+
+            <RevenueChart series={data.revenueSeries} width={contentWidth} />
+
+            <LiveFeed items={data.feed} />
+          </>
+        ) : null}
       </ScrollView>
     </ScreenContainer>
   );
@@ -98,6 +153,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     fontSize: 14,
     color: colors.textMuted,
+  },
+  pulsePlaceholder: {
+    height: 180,
+    borderRadius: radius.lg,
+    backgroundColor: colors.text,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   grid: {
     flexDirection: 'row',
